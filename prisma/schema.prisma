@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   Int                  @id @default(autoincrement())
+  email                String               @unique @db.VarChar(255)
+  password_hash        String
+  name                 String               @db.VarChar(100)
+  avatar_url           String?
+  bio                  String?
+  status_message       String?
+  last_seen            DateTime?            @db.Timestamp(6)
+  created_at           DateTime?            @default(now()) @db.Timestamp(6)
+  contactOf            Contact[]            @relation("ContactTarget")
+  contacts             Contact[]            @relation("ContactOwner")
+  conversations        ConversationMember[]
+  createdConversations Conversation[]       @relation("CreatedBy")
+  messageReactions     MessageReaction[]
+  messageStatuses      MessageStatus[]
+  sentMessages         Message[]
+  pollVotes            PollVote[]
+  savedMessages        SavedMessage[]
+  starredMessages      StarredMessage[]
+
+  @@map("users")
+}
+
+model Contact {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  contact_id Int
+  is_blocked Boolean? @default(false)
+  target     User     @relation("ContactTarget", fields: [contact_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_contact")
+  owner      User     @relation("ContactOwner", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_user")
+
+  @@unique([user_id, contact_id], map: "unique_contact")
+  @@map("contacts")
+}
+
+model Conversation {
+  id             Int                  @id @default(autoincrement())
+  is_group       Boolean?             @default(false)
+  title          String?              @db.VarChar(255)
+  created_by     Int?
+  created_at     DateTime?            @default(now()) @db.Timestamp(6)
+  members        ConversationMember[]
+  createdBy      User?                @relation("CreatedBy", fields: [created_by], references: [id], onUpdate: NoAction)
+  groupInvites   GroupInvite[]
+  messages       Message[]
+  pinnedMessages PinnedMessage[]
+  polls          Poll[]
+
+  @@map("conversations")
+}
+
+model ConversationMember {
+  id              Int          @id @default(autoincrement())
+  conversation_id Int
+  user_id         Int
+  role            String?      @default("member") @db.VarChar(50)
+  joined_at       DateTime?    @default(now()) @db.Timestamp(6)
+  conversation    Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_conversation")
+  user            User         @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_member")
+
+  @@unique([conversation_id, user_id], map: "unique_member")
+  @@map("conversation_members")
+}
+
+model Message {
+  id               Int               @id @default(autoincrement())
+  conversation_id  Int
+  sender_id        Int
+  content          String?
+  media_url        String?
+  message_type     String?           @default("text") @db.VarChar(20)
+  reply_to         Int?
+  created_at       DateTime?         @default(now()) @db.Timestamp(6)
+  updated_at       DateTime?         @default(now()) @db.Timestamp(6)
+  deleted_for_all  Boolean?          @default(false)
+  is_deleted       Boolean?          @default(false)
+  is_edited        Boolean?          @default(false)
+  messageReactions MessageReaction[]
+  messageStatus    MessageStatus[]
+  conversation     Conversation      @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_conversation_msg")
+  sender           User              @relation(fields: [sender_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sender")
+  replyTo          Message?          @relation("MessageReplies", fields: [reply_to], references: [id], onUpdate: NoAction)
+  replies          Message[]         @relation("MessageReplies")
+  pinnedMessages   PinnedMessage[]
+  savedMessages    SavedMessage[]
+  starredMessages  StarredMessage[]
+
+  @@map("messages")
+}
+
+model MessageStatus {
+  id         Int       @id @default(autoincrement())
+  message_id Int
+  user_id    Int
+  status     String?   @default("sent") @db.VarChar(20)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  message    Message   @relation(fields: [message_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_message")
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_status_user")
+
+  @@unique([message_id, user_id], map: "unique_status")
+  @@map("message_status")
+}
+
+model MessageReaction {
+  id         Int       @id @default(autoincrement())
+  message_id Int
+  user_id    Int
+  reaction   String    @db.VarChar(50)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  message    Message   @relation(fields: [message_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([message_id, user_id, reaction])
+  @@map("message_reactions")
+}
+
+model PinnedMessage {
+  id              Int          @id @default(autoincrement())
+  conversation_id Int
+  message_id      Int
+  pinned_by       Int
+  pinned_at       DateTime?    @default(now()) @db.Timestamp(6)
+  conversation    Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  message         Message      @relation(fields: [message_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([conversation_id, message_id])
+  @@map("pinned_messages")
+}
+
+model StarredMessage {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  message_id Int
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  message    Message   @relation(fields: [message_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, message_id])
+  @@map("starred_messages")
+}
+
+model SavedMessage {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  message_id Int
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  message    Message   @relation(fields: [message_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, message_id])
+  @@map("saved_messages")
+}
+
+model GroupInvite {
+  id              Int          @id @default(autoincrement())
+  conversation_id Int
+  invite_code     String       @unique @db.VarChar(100)
+  created_by      Int
+  expires_at      DateTime?
+  max_uses        Int?
+  current_uses    Int?         @default(0)
+  created_at      DateTime?    @default(now()) @db.Timestamp(6)
+  conversation    Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("group_invites")
+}
+
+model Poll {
+  id              Int          @id @default(autoincrement())
+  conversation_id Int
+  question        String       @db.VarChar(500)
+  options         String[]
+  created_by      Int
+  is_multiple     Boolean?     @default(false)
+  expires_at      DateTime?
+  created_at      DateTime?    @default(now()) @db.Timestamp(6)
+  votes           PollVote[]
+  conversation    Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("polls")
+}
+
+model PollVote {
+  id         Int       @id @default(autoincrement())
+  poll_id    Int
+  user_id    Int
+  option     Int
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  poll       Poll      @relation(fields: [poll_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([poll_id, user_id])
+  @@map("poll_votes")
+}
