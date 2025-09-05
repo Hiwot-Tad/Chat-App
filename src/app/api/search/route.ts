@@ -204,3 +204,4 @@ export async function GET(request: NextRequest) {
     return createErrorResponse('Internal server error', 500);
   }
 }
+

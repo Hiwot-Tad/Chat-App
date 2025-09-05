@@ -6,12 +6,13 @@ import { randomBytes } from 'crypto';
 // GET - Get active invites for a conversation
 export async function GET(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
+    const { conversationId: conversationIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);
@@ -34,20 +35,13 @@ export async function GET(
     const invites = await prisma.groupInvite.findMany({
       where: { 
         conversation_id: conversationId,
-        is_used: false,
         expires_at: { gt: new Date() }
       },
       include: {
-        invitedBy: {
+        conversation: {
           select: {
             id: true,
-            name: true
-          }
-        },
-        invitedUser: {
-          select: {
-            id: true,
-            name: true
+            title: true
           }
         }
       },
@@ -68,12 +62,13 @@ export async function GET(
 // POST - Create new invite link
 export async function POST(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
+    const { conversationId: conversationIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);
@@ -91,7 +86,7 @@ export async function POST(
       }
     });
 
-    if (!membership || !['admin', 'owner'].includes(membership.role)) {
+    if (!membership || !membership.role || !['admin', 'owner'].includes(membership.role)) {
       return createErrorResponse('Only admins can create invite links', 403);
     }
 
@@ -113,16 +108,15 @@ export async function POST(
     const invite = await prisma.groupInvite.create({
       data: {
         conversation_id: conversationId,
-        invited_by: parseInt(userId),
-        invited_user: specificUser ? parseInt(specificUser) : null,
+        created_by: parseInt(userId),
         invite_code: inviteCode,
         expires_at: expiresAt
       },
       include: {
-        invitedBy: {
+        conversation: {
           select: {
             id: true,
-            name: true
+            title: true
           }
         }
       }
@@ -148,12 +142,13 @@ export async function POST(
 // DELETE - Revoke invite
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
+    const { conversationId: conversationIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);
@@ -176,13 +171,13 @@ export async function DELETE(
       }
     });
 
-    if (!membership || !['admin', 'owner'].includes(membership.role)) {
+    if (!membership || !membership.role || !['admin', 'owner'].includes(membership.role)) {
       return createErrorResponse('Only admins can revoke invite links', 403);
     }
 
     // Delete invite
     await prisma.groupInvite.delete({
-      where: { id: inviteId }
+      where: { id: parseInt(inviteId) }
     });
 
     return createSuccessResponse({

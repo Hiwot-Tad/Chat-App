@@ -139,3 +139,4 @@ export async function DELETE(request: NextRequest) {
     return createErrorResponse('Internal server error', 500);
   }
 }
+

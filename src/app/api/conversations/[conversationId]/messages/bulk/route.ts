@@ -5,12 +5,13 @@ import { authenticateRequest, createErrorResponse, createSuccessResponse } from 
 // DELETE - Bulk delete messages
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
+    const { conversationId: conversationIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);
@@ -95,12 +96,13 @@ export async function DELETE(
 // POST - Bulk forward messages
 export async function POST(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
+    const { conversationId: conversationIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);

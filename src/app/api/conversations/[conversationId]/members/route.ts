@@ -5,12 +5,13 @@ import { authenticateRequest, createErrorResponse, createSuccessResponse } from 
 // GET - Get conversation members
 export async function GET(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
+    const { conversationId: conversationIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);
@@ -60,12 +61,13 @@ export async function GET(
 // POST - Add member to group
 export async function POST(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
+    const { conversationId: conversationIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);
@@ -87,7 +89,7 @@ export async function POST(
       }
     });
 
-    if (!userMembership || !['admin', 'owner'].includes(userMembership.role)) {
+    if (!userMembership || !userMembership.role || !['admin', 'owner'].includes(userMembership.role)) {
       return createErrorResponse('Only admins can add members', 403);
     }
 
@@ -159,12 +161,13 @@ export async function POST(
 // PUT - Update member role
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
+    const { conversationId: conversationIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);
@@ -232,12 +235,13 @@ export async function PUT(
 // DELETE - Remove member from group
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
+    const { conversationId: conversationIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);
@@ -260,7 +264,7 @@ export async function DELETE(
       }
     });
 
-    if (!userMembership || !['admin', 'owner'].includes(userMembership.role)) {
+    if (!userMembership || !userMembership.role || !['admin', 'owner'].includes(userMembership.role)) {
       return createErrorResponse('Only admins can remove members', 403);
     }
 

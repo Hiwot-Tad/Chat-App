@@ -92,3 +92,4 @@ export async function POST(request: NextRequest) {
     return createErrorResponse('Internal server error', 500);
   }
 }
+

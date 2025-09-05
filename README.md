@@ -1,259 +1,179 @@
-# Chat Application Backend
+# Chat App Backend
 
-A comprehensive backend for a real-time chat application built with Next.js, Prisma, PostgreSQL, and Socket.IO.
+A comprehensive backend API for a real-time chat application built with Next.js, Prisma, and Socket.IO.
 
-## Features
+## 🚀 Features
 
-### 🔐 Authentication & User Management
-- User registration and login with JWT tokens
-- Password hashing with bcrypt
-- User profile management (name, avatar, bio, status)
-- Online/offline status tracking
+- **Authentication** - JWT-based user authentication and authorization
+- **Real-time Messaging** - Socket.IO integration for live chat
+- **File Upload** - Support for avatars and media files
+- **Group Chats** - Create and manage group conversations with roles
+- **Message Management** - Send, edit, delete, forward, and react to messages
+- **Contact System** - Add, block, and manage contacts
+- **Search** - Search through users and messages
+- **Polls** - Create and vote on polls in conversations
+- **Message Status** - Track message delivery and read status
+- **Invite System** - Generate invite links for group conversations
 
-### 💬 Messaging System
-- Direct messaging between users
-- Group chat creation and management
-- Real-time messaging with Socket.IO
-- Message types: text, image, video, file, audio, sticker, GIF
-- **Message editing, deletion, and forwarding**
-- Reply and quote specific messages
-- Message delivery and read receipts
+## 🛠️ Tech Stack
 
-### 👥 Contact Management
-- Add and remove contacts
-- Block and unblock users
-- Contact list management
+- **Next.js 15** with App Router
+- **TypeScript** for type safety
+- **Prisma** ORM with PostgreSQL
+- **Socket.IO** for real-time communication
+- **JWT** for authentication
+- **Multer** for file uploads
+- **bcryptjs** for password hashing
 
-### 🔍 Search & Organization
-- Advanced search with filters (sender, conversation, date, message type)
-- Message pagination
-- **Pin important messages within chats**
-- **Message reactions with emojis**
-- **Star messages for later reference**
-- **Saved messages (personal storage)**
-- **Bulk message operations** (delete, forward multiple messages)
+## 📦 Installation
 
-### 📱 Real-time Features
-- Live typing indicators
-- Online status updates
-- Instant message delivery
-- Real-time notifications
-
-### 🏗️ Group Management
-- **Add and remove group members**
-- **Change member roles (member, admin, owner)**
-- **Leave or delete groups**
-- **Ownership transfer when owner leaves**
-- **Group invite links** (shareable codes with expiration)
-- **Polls system** (create polls, vote, change votes)
-
-## Tech Stack
-
-- **Framework**: Next.js 15 with App Router
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: JWT with bcrypt
-- **Real-time**: Socket.IO
-- **Language**: TypeScript
-- **Validation**: Built-in request validation
-
-## Prerequisites
-
-- Node.js 18+ 
-- PostgreSQL database
-- npm or yarn package manager
-
-## Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd chat-app-backend
-   ```
-
-2. **Install dependencies**
+1. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. **Set up environment variables**
-   Create a `.env` file in the root directory:
+2. **Set up environment variables:**
+   Create a `.env.local` file with:
    ```env
-   DATABASE_URL="postgresql://username:password@localhost:5432/your_database_name"
-   JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
+   DATABASE_URL="postgresql://username:password@localhost:5432/chat_app_db"
+   JWT_SECRET="your-super-secret-jwt-key"
+   NEXT_PUBLIC_APP_URL="http://localhost:3000"
    ```
 
-4. **Set up the database**
+3. **Set up the database:**
    ```bash
-   # Generate Prisma client
    npx prisma generate
-   
-   # Run database migrations (if you have them)
-   npx prisma migrate dev
-   
-   # Or if you want to use your existing database schema
-   npx prisma db pull
+   npx prisma db push
    ```
 
-5. **Start the development server**
+4. **Start the development server:**
    ```bash
    npm run dev
    ```
 
-## API Endpoints
+## 🔌 API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User login
 
-### User Management
+### Users
 - `GET /api/users/profile` - Get user profile
 - `PUT /api/users/profile` - Update user profile
 
-### Conversations
-- `GET /api/conversations` - List user conversations
-- `POST /api/conversations` - Create new conversation
-- `GET /api/conversations/[id]/messages` - Get conversation messages
-- `POST /api/conversations/[id]/messages` - Send message
-- `GET /api/conversations/[id]/pinned-messages` - Get pinned messages
-- `POST /api/conversations/[id]/pinned-messages` - Pin a message
-- `DELETE /api/conversations/[id]/pinned-messages` - Unpin a message
-- `GET /api/conversations/[id]/invites` - Get group invites
-- `POST /api/conversations/[id]/invites` - Create invite link
-- `DELETE /api/conversations/[id]/invites` - Revoke invite
-- `GET /api/conversations/[id]/polls` - Get conversation polls
-- `POST /api/conversations/[id]/polls` - Create poll
-- `POST /api/polls/[id]/vote` - Vote on poll
-- `PUT /api/polls/[id]/vote` - Change vote
-- `DELETE /api/polls/[id]/vote` - Remove vote
-- `GET /api/conversations/[id]/members` - Get conversation members
-- `POST /api/conversations/[id]/members` - Add member to group
-- `PUT /api/conversations/[id]/members` - Update member role
-- `DELETE /api/conversations/[id]/members` - Remove member from group
-- `POST /api/conversations/[id]/leave` - Leave or delete conversation
-
-### Messages
-- `PUT /api/conversations/[id]/messages/[messageId]` - Edit message
-- `DELETE /api/conversations/[id]/messages/[messageId]` - Delete message
-- `POST /api/conversations/[id]/messages/[messageId]` - Forward message
-- `GET /api/messages/[messageId]/reactions` - Get message reactions
-- `POST /api/messages/[messageId]/reactions` - Add reaction to message
-- `DELETE /api/messages/[messageId]/reactions` - Remove reaction from message
-- `POST /api/messages/[messageId]/star` - Star a message
-- `DELETE /api/messages/[messageId]/star` - Unstar a message
-
 ### Contacts
-- `GET /api/contacts` - List user contacts
-- `POST /api/contacts` - Add new contact
-- `PUT /api/contacts` - Update contact (block/unblock)
-
-### Saved Messages
-- `GET /api/saved-messages` - Get saved messages
-- `POST /api/saved-messages` - Save a message
-
-### Invites
-- `POST /api/invites/[inviteCode]/join` - Join group using invite code
-
-### Bulk Operations
-- `DELETE /api/conversations/[id]/messages/bulk` - Bulk delete messages
-- `POST /api/conversations/[id]/messages/bulk` - Bulk forward messages
+- `GET /api/contacts` - List contacts
+- `POST /api/contacts` - Add contact
+- `PUT /api/contacts` - Update/block contact
 - `DELETE /api/contacts` - Remove contact
 
-### Search
-- `GET /api/search?q=query&type=all` - Search users and messages
+### Conversations
+- `GET /api/conversations` - List conversations
+- `POST /api/conversations` - Create conversation
+- `POST /api/conversations/[id]/leave` - Leave conversation
+- `GET /api/conversations/[id]/members` - List members
+- `POST /api/conversations/[id]/members` - Add member
+- `PUT /api/conversations/[id]/members` - Update member role
+- `DELETE /api/conversations/[id]/members` - Remove member
 
-### WebSocket
-- `/api/socketio` - Socket.IO endpoint for real-time communication
+### Messages
+- `GET /api/conversations/[id]/messages` - List messages
+- `POST /api/conversations/[id]/messages` - Send message
+- `PUT /api/conversations/[id]/messages/[msgId]` - Edit message
+- `DELETE /api/conversations/[id]/messages/[msgId]` - Delete message
+- `POST /api/conversations/[id]/messages/[msgId]` - Forward message
 
-## Database Schema
+### File Uploads
+- `POST /api/upload/avatar` - Upload avatar
+- `DELETE /api/upload/avatar` - Delete avatar
+- `POST /api/upload/media` - Upload media files
 
-The application uses the following main tables:
+### Real-time Communication
+- WebSocket endpoint: `/api/socketio`
 
-- **users** - User accounts and profiles
-- **conversations** - Chat conversations (direct and group)
-- **conversation_members** - Conversation participants with roles
-- **messages** - Chat messages with edit/delete support
-- **message_status** - Message delivery and read status
-- **message_reactions** - Emoji reactions on messages
-- **pinned_messages** - Pinned messages in conversations
-- **contacts** - User contact relationships
+## 🗄️ Database Schema
 
-## Real-time Communication
+The application uses PostgreSQL with the following main entities:
+- **Users** - User accounts and profiles
+- **Conversations** - Chat conversations (direct and group)
+- **Messages** - Chat messages with media support
+- **Contacts** - User contact relationships
+- **Polls** - Voting polls in conversations
+- **File Uploads** - Avatar and media file management
 
-The backend uses Socket.IO for real-time features:
-
-- **Message Broadcasting**: Messages are instantly delivered to all conversation participants
-- **Typing Indicators**: Shows when users are typing
-- **Online Status**: Real-time user online/offline status
-- **Message Status**: Live updates for message delivery and read receipts
-- **Message Reactions**: Real-time emoji reactions
-- **Group Updates**: Live member changes and role updates
-
-## Security Features
+## 🔒 Security Features
 
 - JWT token authentication
-- Password hashing with bcrypt
-- Request validation and sanitization
-- Protected API routes
-- User authorization checks
-- Role-based access control for group management
+- Password hashing with bcryptjs
+- Input validation and sanitization
+- File upload security
+- CORS protection
+- Role-based access control
 
-## Development
+## 🚀 Production Deployment
 
-### Running Tests
-```bash
-npm run test
-```
-
-### Database Management
-```bash
-# View database in Prisma Studio
-npx prisma studio
-
-# Reset database
-npx prisma db reset
-
-# Generate Prisma client after schema changes
-npx prisma generate
-```
-
-### Code Quality
-```bash
-# Lint code
-npm run lint
-
-# Format code
-npm run format
-```
-
-## Production Deployment
-
-1. **Build the application**
+1. **Build the application:**
    ```bash
    npm run build
    ```
 
-2. **Set production environment variables**
-   - Use a strong JWT_SECRET
-   - Configure production DATABASE_URL
-   - Set NODE_ENV=production
-
-3. **Start the production server**
+2. **Start production server:**
    ```bash
    npm start
    ```
 
-## Contributing
+3. **Deploy to platforms:**
+   - Vercel (recommended for Next.js)
+   - Railway
+   - AWS
+   - DigitalOcean
+   - Heroku
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+## 📁 Project Structure
 
-## License
+```
+src/
+├── app/
+│   ├── api/                    # API routes
+│   │   ├── auth/              # Authentication endpoints
+│   │   ├── conversations/     # Conversation management
+│   │   ├── messages/          # Message handling
+│   │   ├── upload/            # File upload endpoints
+│   │   └── users/             # User management
+│   └── layout.tsx             # Root layout
+├── lib/
+│   ├── auth.ts                # Authentication utilities
+│   ├── middleware.ts          # API middleware
+│   ├── prisma.ts              # Database client
+│   └── socket.ts              # Socket.IO configuration
+public/
+└── uploads/                   # File upload directory
+    ├── avatars/               # User avatars
+    └── messages/              # Message media
+prisma/
+└── schema.prisma              # Database schema
+```
 
-This project is licensed under the MIT License.
+## 🧪 Testing
 
-## Support
+Use the provided Postman collection (`Chat_App_Complete_API.postman_collection.json`) to test all API endpoints.
 
-For support and questions, please open an issue in the repository.
+## 📚 Documentation
+
+- See `DEPLOYMENT.md` for detailed deployment instructions
+- See `UPLOAD_SETUP.md` for file upload configuration
+
+## 🎯 Ready for Production
+
+Your chat app backend is now ready for deployment! 
+
+**Key features:**
+- ✅ Complete API with authentication
+- ✅ Real-time messaging with Socket.IO
+- ✅ File upload support
+- ✅ Database schema with Prisma
+- ✅ Production-ready configuration
+- ✅ Comprehensive error handling
+- ✅ Security best practices
+
+Deploy and start building your frontend! 🚀

@@ -5,12 +5,13 @@ import { authenticateRequest, createErrorResponse, createSuccessResponse } from 
 // POST - Leave conversation or delete group
 export async function POST(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
+    const { conversationId: conversationIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);

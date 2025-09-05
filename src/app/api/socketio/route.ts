@@ -12,3 +12,4 @@ export async function POST(request: NextRequest) {
   // The actual WebSocket handling is done in the socket.ts file
   return NextResponse.json({ message: 'Socket.IO endpoint' });
 }
+

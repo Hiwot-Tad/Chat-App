@@ -5,12 +5,13 @@ import { authenticateRequest, createErrorResponse, createSuccessResponse } from 
 // GET messages for a conversation
 export async function GET(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
+    const { conversationId: conversationIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);
@@ -90,12 +91,13 @@ export async function GET(
 // POST send a new message
 export async function POST(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
+    const { conversationId: conversationIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);
@@ -166,7 +168,7 @@ export async function POST(
 
     return createSuccessResponse({
       message: 'Message sent successfully',
-      message
+      data: message
     }, 201);
 
   } catch (error) {

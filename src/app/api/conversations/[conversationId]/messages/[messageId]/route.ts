@@ -5,13 +5,14 @@ import { authenticateRequest, createErrorResponse, createSuccessResponse } from 
 // PUT - Edit message
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { conversationId: string; messageId: string } }
+  { params }: { params: Promise<{ conversationId: string; messageId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
-    const messageId = parseInt(params.messageId);
+    const { conversationId: conversationIdParam, messageId: messageIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
+    const messageId = parseInt(messageIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);
@@ -39,7 +40,7 @@ export async function PUT(
         content: content || message.content,
         media_url: media_url !== undefined ? media_url : message.media_url,
         updated_at: new Date(),
-        isEdited: true
+        is_edited: true
       },
       include: {
         sender: {
@@ -69,13 +70,14 @@ export async function PUT(
 // DELETE - Delete message
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { conversationId: string; messageId: string } }
+  { params }: { params: Promise<{ conversationId: string; messageId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
-    const messageId = parseInt(params.messageId);
+    const { conversationId: conversationIdParam, messageId: messageIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
+    const messageId = parseInt(messageIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);
@@ -100,13 +102,13 @@ export async function DELETE(
       // Delete for all participants
       await prisma.message.update({
         where: { id: messageId },
-        data: { deletedForAll: true }
+        data: { deleted_for_all: true }
       });
     } else {
       // Delete for sender only
       await prisma.message.update({
         where: { id: messageId },
-        data: { isDeleted: true }
+        data: { is_deleted: true }
       });
     }
 
@@ -126,13 +128,14 @@ export async function DELETE(
 // POST - Forward message
 export async function POST(
   request: NextRequest,
-  { params }: { params: { conversationId: string; messageId: string } }
+  { params }: { params: Promise<{ conversationId: string; messageId: string }> }
 ) {
   try {
     const authenticatedRequest = await authenticateRequest(request);
     const userId = authenticatedRequest.user?.userId;
-    const conversationId = parseInt(params.conversationId);
-    const messageId = parseInt(params.messageId);
+    const { conversationId: conversationIdParam, messageId: messageIdParam } = await params;
+    const conversationId = parseInt(conversationIdParam);
+    const messageId = parseInt(messageIdParam);
 
     if (!userId) {
       return createErrorResponse('Unauthorized', 401);
